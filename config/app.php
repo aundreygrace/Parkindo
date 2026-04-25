@@ -30,7 +30,8 @@ define('VIEW_PATH',   BASE_PATH . '/views');
 define('HELPER_PATH', BASE_PATH . '/helpers');
 
 // ── Zona Waktu ────────────────────────────────────────────────
-date_default_timezone_set('Asia/Jakarta');
+$tz = $_ENV['TZ'] ?? getenv('TZ') ?? 'Asia/Jakarta';
+date_default_timezone_set($tz);
 
 // ── Error Reporting (matikan di production) ───────────────────
 $isProduction = !empty($_ENV['APP_URL']) || !empty(getenv('APP_URL'));
