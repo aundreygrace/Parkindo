@@ -16,6 +16,14 @@
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
 
+/**
+ * Ambil waktu sekarang dalam timezone Asia/Jakarta
+ */
+function nowWIB(): string
+{
+    return (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->format('Y-m-d H:i:s');
+}
+
 // ══════════════════════════════════════════════════════════════
 //  SESSION & AUTH
 // ══════════════════════════════════════════════════════════════

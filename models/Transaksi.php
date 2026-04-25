@@ -158,12 +158,14 @@ class Transaksi
 
         $stmt = $this->db->prepare(
             "INSERT INTO tb_transaksi
-             (kode_parkir, id_kendaraan, waktu_masuk, id_tarif, id_area, id_user, status)
-             VALUES (?, ?, NOW(), ?, ?, ?, 'masuk')"
+            (kode_parkir, id_kendaraan, waktu_masuk, id_tarif, id_area, id_user, status)
+            VALUES (?, ?, ?, ?, ?, ?, 'masuk')"
+
         );
         $ok = $stmt->execute([
             $kode,
             $data['id_kendaraan'],
+            nowWIB(),
             $data['id_tarif'],
             $data['id_area'],
             $data['id_user'],
@@ -186,7 +188,7 @@ class Transaksi
      */
     public function keluar(int $idParkir, array $tarif, float $bayar): array
     {
-        $waktuKeluar = date('Y-m-d H:i:s');
+        $waktuKeluar = nowWIB();
 
         // Ambil waktu masuk
         $stmt = $this->db->prepare("SELECT waktu_masuk FROM tb_transaksi WHERE id_parkir = ?");
@@ -229,7 +231,9 @@ class Transaksi
     {
         return (int)$this->db->query(
             "SELECT COALESCE(SUM(biaya_total), 0) FROM tb_transaksi
-             WHERE status = 'keluar' AND DATE(waktu_keluar) = CURDATE()"
+            WHERE status = 'keluar' 
+            AND DATE(CONVERT_TZ(waktu_keluar, '+00:00', '+07:00')) = CURDATE()"
+
         )->fetchColumn();
     }
 
@@ -238,7 +242,8 @@ class Transaksi
     {
         return (int)$this->db->query(
             "SELECT COUNT(*) FROM tb_transaksi
-             WHERE DATE(created_at) = CURDATE()"
+            WHERE DATE(CONVERT_TZ(created_at, '+00:00', '+07:00')) = CURDATE()"
+
         )->fetchColumn();
     }
 
@@ -251,13 +256,13 @@ class Transaksi
     public function grafikPendapatan(int $hari = 7): array
     {
         $stmt = $this->db->prepare(
-            "SELECT DATE(waktu_keluar) AS tanggal,
-                    COALESCE(SUM(biaya_total), 0) AS total
-             FROM tb_transaksi
-             WHERE status = 'keluar'
-               AND waktu_keluar >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-             GROUP BY DATE(waktu_keluar)
-             ORDER BY tanggal ASC"
+        "SELECT DATE(CONVERT_TZ(waktu_keluar, '+00:00', '+07:00')) AS tanggal,
+                COALESCE(SUM(biaya_total), 0) AS total
+        FROM tb_transaksi
+        WHERE status = 'keluar'
+        AND waktu_keluar >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        GROUP BY DATE(CONVERT_TZ(waktu_keluar, '+00:00', '+07:00'))
+        ORDER BY tanggal ASC"
         );
         $stmt->execute([$hari]);
         return $stmt->fetchAll();
